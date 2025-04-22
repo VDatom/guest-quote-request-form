@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compact Quote Request with Success Notification</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.4;
+            color: #333;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .product-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .product-title {
+            font-size: 18px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .add-to-quote {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+        
+        .add-to-quote:hover {
+            background-color: #27ae60;
+        }
+        
+        .quote-options {
+            display: none;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-top: 15px;
+        }
+        
+        .options-title {
+            font-size: 16px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .option-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .option-btn {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #f9f9f9;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .option-btn:hover {
+            background: #eee;
+            border-color: #ccc;
+        }
+        
+        .option-btn.guest {
+            background: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+        
+        .option-btn.guest:hover {
+            background: #2980b9;
+        }
+        
+        .option-btn.login {
+            background: #f1f1f1;
+        }
+        
+        .option-btn.login:hover {
+            background: #e0e0e0;
+        }
+        
+        .quote-form {
+            display: none;
+            margin-top: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 12px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+        
+        .form-group label.required:after {
+            content: " *";
+            color: #e74c3c;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        .form-control:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+        }
+        
+        .quantity-btn {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .quantity-input {
+            width: 50px;
+            text-align: center;
+            margin: 0 5px;
+        }
+        
+        .submit-btn {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: background-color 0.2s;
+        }
+        
+        .submit-btn:hover {
+            background-color: #27ae60;
+        }
+        
+        .info-note {
+            font-size: 12px;
+            color: #666;
+            margin-top: 15px;
+            text-align: center;
+        }
+        
+        .success-notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #2ecc71;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none;
+            animation: fadeIn 0.1s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; top: 0; }
+            to { opacity: 1; top: 20px; }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; top: 20px; }
+            to { opacity: 0; top: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="success-notification" id="successNotification">
+        Quote submitted successfully!
+    </div>
+    
+    <div class="product-card">
+        <div class="product-title">Industrial Bearing Unit</div>
+        <button id="addToQuoteBtn" class="add-to-quote">Add to Quote</button>
+        
+        <div id="quoteOptions" class="quote-options">
+            <div class="options-title">How would you like to proceed?</div>
+            <div class="option-buttons">
+                <button id="guestOption" class="option-btn guest">Continue as Guest</button>
+                <button id="loginOption" class="option-btn login">Login / Register</button>
+            </div>
+            
+            <div id="guestForm" class="quote-form">
+                <form id="compactQuoteForm">
+                    <div class="form-group">
+                        <label for="compactName" class="required">Full Name</label>
+                        <input type="text" id="compactName" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="compactEmail" class="required">Email</label>
+                        <input type="email" id="compactEmail" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="compactPhone">Mobile Number</label>
+                        <input type="tel" id="compactPhone" class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="required">Quantity</label>
+                        <div class="quantity-selector">
+                            <button type="button" class="quantity-btn" id="compactDecrease">-</button>
+                            <input type="number" id="compactQuantity" class="form-control quantity-input" value="1" min="1">
+                            <button type="button" class="quantity-btn" id="compactIncrease">+</button>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">Submit Quote Request</button>
+                </form>
+            </div>
+            
+            <div id="loginForm" class="quote-form">
+                <div class="info-note">Please login or register to continue with your quote request.</div>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <a href="/login" class="option-btn login" style="text-decoration: none; text-align: center;">Login</a>
+                    <a href="/register" class="option-btn guest" style="text-decoration: none; text-align: center;">Register</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Main elements
+            const addToQuoteBtn = document.getElementById('addToQuoteBtn');
+            const quoteOptions = document.getElementById('quoteOptions');
+            const guestOption = document.getElementById('guestOption');
+            const loginOption = document.getElementById('loginOption');
+            const guestForm = document.getElementById('guestForm');
+            const loginForm = document.getElementById('loginForm');
+            const successNotification = document.getElementById('successNotification');
+            
+            // Quantity controls
+            const quantityInput = document.getElementById('compactQuantity');
+            const decreaseBtn = document.getElementById('compactDecrease');
+            const increaseBtn = document.getElementById('compactIncrease');
+            
+            // Show options when Add to Quote is clicked
+            addToQuoteBtn.addEventListener('click', function() {
+                quoteOptions.style.display = 'block';
+            });
+            
+            // Show guest form
+            guestOption.addEventListener('click', function() {
+                guestForm.style.display = 'block';
+                loginForm.style.display = 'none';
+                
+                // Load saved data if available
+                const savedInfo = localStorage.getItem('compactQuoteInfo');
+                if (savedInfo) {
+                    const info = JSON.parse(savedInfo);
+                    document.getElementById('compactName').value = info.name || '';
+                    document.getElementById('compactEmail').value = info.email || '';
+                    document.getElementById('compactPhone').value = info.phone || '';
+                }
+            });
+            
+            // Show login options
+            loginOption.addEventListener('click', function() {
+                loginForm.style.display = 'block';
+                guestForm.style.display = 'none';
+            });
+            
+            // Quantity controls
+            decreaseBtn.addEventListener('click', function() {
+                let currentVal = parseInt(quantityInput.value);
+                if (currentVal > 1) {
+                    quantityInput.value = currentVal - 1;
+                }
+            });
+            
+            increaseBtn.addEventListener('click', function() {
+                let currentVal = parseInt(quantityInput.value);
+                quantityInput.value = currentVal + 1;
+            });
+            
+            // Form submission
+            document.getElementById('compactQuoteForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const name = document.getElementById('compactName').value.trim();
+                const email = document.getElementById('compactEmail').value.trim();
+                const phone = document.getElementById('compactPhone').value.trim();
+                const quantity = document.getElementById('compactQuantity').value;
+                
+                if (!name || !email) {
+                    alert('Please fill in all required fields');
+                    return;
+                }
+                
+                // Save to local storage
+                const quoteInfo = {
+                    name: name,
+                    email: email,
+                    phone: phone
+                };
+                localStorage.setItem('compactQuoteInfo', JSON.stringify(quoteInfo));
+                
+                // In a real app, you would send this data to your server
+                console.log('Quote submitted:', {
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    quantity: quantity
+                });
+                
+                // Show success notification
+                successNotification.style.display = 'block';
+                successNotification.style.animation = 'fadeIn 0.3s ease-out';
+                
+                // Hide after delay and reset form
+                setTimeout(function() {
+                    successNotification.style.animation = 'fadeOut 0.3s ease-out';
+                    
+                    setTimeout(function() {
+                        successNotification.style.display = 'none';
+                        
+                        // Reset the form and UI
+                        document.getElementById('compactQuoteForm').reset();
+                        quoteOptions.style.display = 'none';
+                        guestForm.style.display = 'none';
+                        loginForm.style.display = 'none';
+                    }, 300);
+                }, 2000); // Notification shows for 2 seconds
+            });
+        });
+    </script>
+</body>
+</html>
